@@ -1,0 +1,43 @@
+{
+  "name": "netflix-together",
+  "version": "0.0.1",
+  "description": "A tool to view a catalog of (netflix) movies all people taking part of a movie night havent seen",
+  "main": "index.js",
+  "dependencies": {
+    "debug": "^4.1.0",
+    "dotenv": "^6.1.0",
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.0",
+    "mongodb": "^3.1.10",
+    "mustache": "^3.0.1",
+    "node-forge": "^0.7.6",
+    "purdy": "^3.4.1",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "ws": "^6.1.2"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.23.5",
+    "browser-sync-ui": "^1.0.1",
+    "gulp": "^4.0.0",
+    "gulp-autoprefixer": "^4.1.0",
+    "gulp-gh-pages": "^0.5.4",
+    "gulp-nodemon": "^2.4.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-sass-glob": "^1.0.8",
+    "require-dir": "^0.3.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielbeeke/watch-together.git"
+  },
+  "author": "Daniel Beeke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielbeeke/watch-together/issues"
+  },
+  "homepage": "https://github.com/danielbeeke/watch-together#readme"
+}

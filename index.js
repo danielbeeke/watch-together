@@ -1,59 +1,122 @@
+/**
+ * Module includes
+ */
 require('dotenv').config();
+const netflixLogin = require('./modules/login');
+const MongoClient = require('mongodb').MongoClient;
+const mongoDbUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/test?retryWrites=true`;
+const cookieSession = require('cookie-session');
+
+/**
+ * Express App
+ */
 const express = require('express');
 const handlebars = require('express-handlebars');
 const bodyParser = require('body-parser');
-const login = require('./modules/login');
-const app = express();
 
+const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('static'));
 app.engine('handlebars', handlebars({ defaultLayout: 'html' }));
 app.set('view engine', 'handlebars');
-const port = 5000;
 
-let MongoClient = require('mongodb').MongoClient;
-let url = "mongodb://localhost:27017/";
+app.use(cookieSession({
+  name: 'session',
+  secret: ['D0EA85FD7BFE11E1D43498F2C93655AC'],
+  maxAge: 24 * 60 * 60 * 1000 * 365 // 1 year
+}))
+/**
+ * Globals
+ */
+let mongoDb;
+let mongoDbClient;
 
-MongoClient.connect(url, { useNewUrlParser: true }, function(err, mongo) {
-  if (err) throw err;
-  let dbo = mongo.db(process.env.DATABASE);
-  dbo.createCollection('viewed_movies', function(err, res) {
-    if (err) throw err;
-    console.log("Collection created!");
-    mongo.close();
-  });
-});
-
+/**
+ * Routing
+ */
 app.get('/', (req, res) => res.render('welcome'));
 
-app.get('/login', (req, res) => res.render('login'));
+app.get('/login', (req, res) => res.render('login', {
+  user: process.env.NETFLIX_DEVELOPMENT_USER,
+  pass: process.env.NETFLIX_DEVELOPMENT_PASS,
+}));
 
 app.post('/login', (req, res) => {
-  login(req.body.email, req.body.password).then(cookieJar => {
-    // TODO save cookiejar with mongodb, check how the caching works inside netflix-login
-    console.log(cookieJar)
-    console.log('success');
-    res.redirect('loading');
-  })
-  .catch(error => {
-    console.log(error);
-    res.render('login');
+  let getWatchedMovies = (cookieJar) => {
+    console.log('Everything worked');
+  };
+
+  mongoDbClient.findOne({ mail: req.body.email })
+  .then((existingUser) => {
+    if (existingUser) {
+      // to do: what if password is changed or netflix deleted sessionasd
+      getWatchedMovies(existingUser.cookieJar);
+    }
+    else {
+      netflixLogin(req.body.email, req.body.password).then(cookieJar => {
+        mongoDbClient.insertOne({
+          mail: req.body.email,
+          cookieJar: cookieJar
+        }).then( (result) => {
+          if (result.insertedId) {
+            getWatchedMovies(cookieJar);
+          }
+          else{
+            console.log("return mongodb didn't answer valid");
+          }
+        }).catch((error) => {
+          console.log(error)
+        });
+      })
+      .catch(error => {
+        console.log("return invalid login/pass");
+      });
+    }
+  }).catch((error) => {
+    console.log(error)
+  });
+
+  res.render('login', {
+    user: process.env.NETFLIX_DEVELOPMENT_USER,
+    pass: process.env.NETFLIX_DEVELOPMENT_PASS,
   });
 });
 
-app.get('/:roomName', (req, res) => res.send(req.params.roomName));
 
-app.listen(port);
+/**
+ * Start database and if connected start express.
+ */
+MongoClient.connect(mongoDbUrl, { useNewUrlParser: true }, function(error, mongo) {
+  if (error) throw error;
+  mongoDb = mongo;
 
-/*
-const watched = require('./modules/watched');
+  try {
+    mongoDbClient = mongoDb.db(process.env.MONGODB_DATABASE).collection('accounts');
+  }
+  catch (error) {
+    console.log(error)
+  }
 
-
-
-const username = process.env.USERNAME;
-const password = process.env.PASSWORD;
-
-watched(username, password).then(watchedMovies => {
-  console.log(watchedMovies)
+  app.listen(process.env.PORT);
 });
-*/
+
+
+let gracefulShutdown = () => {
+  if (mongoDb) mongoDb.close();
+  console.log('System closed...')
+};
+
+// This will handle process.exit():
+process.on('exit', gracefulShutdown);
+
+// This will handle kill commands, such as CTRL+C:
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+
+// This will prevent dirty exit on code-fault crashes:
+process.on('uncaughtException', (error) => {
+  console.log(error);
+  gracefulShutdown();
+});
+
+console.log('App started...');

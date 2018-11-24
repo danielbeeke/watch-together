@@ -9,6 +9,7 @@ gulp.task('browsersync', function(cb) {
   global.browserSync.init({
     proxy: "http://localhost:5000",
     port: 7000,
+    ghostMode: false
   });
 
   gulp.watch([global.paths.html, global.paths.js]).on('change', reload);

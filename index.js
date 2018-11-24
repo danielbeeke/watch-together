@@ -5,9 +5,9 @@ require('dotenv').config();
 const netflixLogin = require('./modules/login');
 const MongoClient = require('mongodb').MongoClient;
 const mongoDbUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/test?retryWrites=true`;
-const mongoDbSessionUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}?authSource=admins&w=1`;
+const mongoDbSessionUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}?retryWrites=true`;
 const expressSession = require('express-session');
-const MongoStore = require('connect-mongo')(expressSession);
+const MongoDBStore = require('connect-mongodb-session')(expressSession);
 
 /**
  * Express App
@@ -22,15 +22,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('static'));
 app.engine('handlebars', handlebars({ defaultLayout: 'html' }));
 app.set('view engine', 'handlebars');
-// app.use(expressSession({
-//   secret: 'D0EA85FD7BFE11E1D43498F2C93655AC',
-//   store: new MongoStore({
-//       url: mongoDbSessionUrl,
-//   }),
-//   resave: true,
-//   saveUninitialized: true,
-//   cookie: { secure: true },
-// }));
+app.use(expressSession({
+  secret: 'D0EA85FD7BFE11E1D43498F2C93655AC',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  },
+  store: new MongoDBStore({
+    uri: mongoDbSessionUrl,
+    databaseName: process.env.MONGODB_DATABASE,
+    collection: 'sessions'
+  }),
+  resave: true,
+  saveUninitialized: true,
+}));
 
 
 /**

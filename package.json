@@ -20,6 +20,7 @@
     "purdy": "^3.4.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "tough-cookie": "^2.4.3",
     "ws": "^6.1.2"
   },
   "devDependencies": {

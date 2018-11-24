@@ -1,9 +1,8 @@
-let netflixLogin = require('./netflix-login/login');
-let netflixCrypto = require('./netflix-login/crypto');
+const netflixLogin = require('./netflix-login/login');
+const netflixCrypto = require('./netflix-login/crypto');
 
 const options = {
-  useCache: true,
-  cachePath: './tmp',
+  useCache: false
 };
 
 module.exports = (username, password) => {

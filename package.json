@@ -4,10 +4,12 @@
   "description": "A tool to view a catalog of (netflix) movies all people taking part of a movie night havent seen",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "debug": "^4.1.0",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
+    "md5": "^2.2.1",
     "mongodb": "^3.1.10",
     "mustache": "^3.0.1",
     "node-forge": "^0.7.6",

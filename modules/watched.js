@@ -1,6 +1,5 @@
-let request = require('request-promise');
-let login = require('./login');
-
+const request = require('request-promise');
+const login = require('./login');
 const viewedUrl = 'https://www.netflix.com/api/shakti/v4bf615c3/viewingactivity';
 
 module.exports = async (username, password) => {

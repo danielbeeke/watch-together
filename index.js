@@ -5,7 +5,9 @@ require('dotenv').config();
 const netflixLogin = require('./modules/login');
 const MongoClient = require('mongodb').MongoClient;
 const mongoDbUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/test?retryWrites=true`;
-const cookieSession = require('cookie-session');
+const mongoDbSessionUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}?authSource=admins&w=1`;
+const expressSession = require('express-session');
+const MongoStore = require('connect-mongo')(expressSession);
 
 /**
  * Express App
@@ -14,17 +16,23 @@ const express = require('express');
 const handlebars = require('express-handlebars');
 const bodyParser = require('body-parser');
 
+console.log(mongoDbSessionUrl);
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('static'));
 app.engine('handlebars', handlebars({ defaultLayout: 'html' }));
 app.set('view engine', 'handlebars');
+// app.use(expressSession({
+//   secret: 'D0EA85FD7BFE11E1D43498F2C93655AC',
+//   store: new MongoStore({
+//       url: mongoDbSessionUrl,
+//   }),
+//   resave: true,
+//   saveUninitialized: true,
+//   cookie: { secure: true },
+// }));
 
-app.use(cookieSession({
-  name: 'session',
-  secret: ['D0EA85FD7BFE11E1D43498F2C93655AC'],
-  maxAge: 24 * 60 * 60 * 1000 * 365 // 1 year
-}))
+
 /**
  * Globals
  */
@@ -36,10 +44,34 @@ let mongoDbClient;
  */
 app.get('/', (req, res) => res.render('welcome'));
 
-app.get('/login', (req, res) => res.render('login', {
-  user: process.env.NETFLIX_DEVELOPMENT_USER,
-  pass: process.env.NETFLIX_DEVELOPMENT_PASS,
-}));
+app.get('/login', (req, res) => {
+  var hour = 3600000;
+  req.session.cookie.expires = new Date(Date.now() + hour);
+  req.session.cookie.maxAge = hour;
+
+  console.log(req.sessionID);
+  req.session.test = 'hoi';
+  mongoDbClient.findOne({ session: req.sessionID })
+  .then((existingUser) => {
+    if (existingUser) {
+      res.redirect('/loading');
+    }
+    else {
+      res.render('login', {
+        user: process.env.NETFLIX_DEVELOPMENT_USER,
+        pass: process.env.NETFLIX_DEVELOPMENT_PASS,
+      })
+    }
+  })
+  .catch ((error) => {
+    console.log(error);
+
+    res.render('login', {
+      user: process.env.NETFLIX_DEVELOPMENT_USER,
+      pass: process.env.NETFLIX_DEVELOPMENT_PASS,
+    })
+  })
+});
 
 app.post('/login', (req, res) => {
   let getWatchedMovies = (cookieJar) => {
@@ -54,18 +86,23 @@ app.post('/login', (req, res) => {
     }
     else {
       netflixLogin(req.body.email, req.body.password).then(cookieJar => {
-        mongoDbClient.insertOne({
-          mail: req.body.email,
-          cookieJar: cookieJar
-        }).then( (result) => {
-          if (result.insertedId) {
-            getWatchedMovies(cookieJar);
+        req.session.regenerate(function(error) {
+          if (!error) {
+            mongoDbClient.insertOne({
+              mail: req.body.email,
+              cookieJar: cookieJar,
+              session: req.sessionID
+            }).then( (result) => {
+              if (result.insertedId) {
+                getWatchedMovies(cookieJar);
+              }
+              else{
+                console.log("return mongodb didn't answer valid");
+              }
+            }).catch((error) => {
+              console.log(error)
+            });
           }
-          else{
-            console.log("return mongodb didn't answer valid");
-          }
-        }).catch((error) => {
-          console.log(error)
         });
       })
       .catch(error => {

@@ -8,7 +8,6 @@ const expressSession = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(expressSession);
 const watchedMovies = require('./modules/watched');
 const shakti = require('./modules/Shakti');
-const restoreCookieJar = require('./modules/RestoreCookieJar');
 
 /**
  * Express App
@@ -78,24 +77,29 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/loading', (req, res) => {
-  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
-  watchedMovies(cookieJar).then((watchedMovies) => {
+  watchedMovies(req).then((watchedMovies) => {
     req.session.watchedMovies = watchedMovies;
     res.redirect('catalog');
   });
 });
 
-app.get('/catalog', (req, res) => res.render('catalog', {
-  jsonData: JSON.stringify(req.session.watchedMovies)
-}));
-
-app.get('/browse', (req, res) => {
-  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
-
-  shakti(req, cookieJar).then((response) => {
-    res.status(200).send(response);
+app.get('/catalog/:genreId', (req, res) => {
+  shakti.browseGenre(req.params.genreId, req).then((videos) => {
+    res.render('catalog', {
+      jsonData: JSON.stringify(req.session.watchedMovies),
+      videos: videos
+    });
+  }).catch((error) => {
+    console.log(error)
   });
+});
 
+app.get('/api/browse/:genreId', (req, res) => {
+  shakti.browseGenre(req.params.genreId, req).then((response) => {
+    res.status(200).send(response);
+  }).catch((error) => {
+    console.log(error)
+  });
 });
 
 app.listen(process.env.PORT);

@@ -1,7 +1,9 @@
 const request = require('request-promise');
 const viewedUrl = 'https://www.netflix.com/api/shakti/v4bf615c3/viewingactivity';
+const restoreCookieJar = require('./RestoreCookieJar');
 
-module.exports = async (cookieJar) => {
+module.exports = async (req) => {
+  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
 
   return new Promise((resolve) => {
     let watchedMovies = [];

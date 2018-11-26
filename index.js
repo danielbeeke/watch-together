@@ -3,10 +3,11 @@
  */
 require('dotenv').config();
 const netflixLogin = require('./modules/login');
-const mongoDbSessionUrl = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}?retryWrites=true`;
+const mongoDbSessionUrl = process.env.MONGODB_URL;
 const expressSession = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(expressSession);
 const watchedMovies = require('./modules/watched');
+const restoreCookieJar = require('./modules/RestoreCookieJar');
 
 /**
  * Express App
@@ -40,16 +41,16 @@ app.use(expressSession({
 app.get('/', (req, res) => res.render('welcome'));
 
 let getWatchedMovies = (req, callback) => {
-  watchedMovies(req.session.cookieJar).then( (watchedMovies) => {
+  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
+  watchedMovies(cookieJar).then( (watchedMovies) => {
     console.log(watchedMovies);
     callback();
-  })
+  });
 };
 
-
 app.get('/login', (req, res) => {
-  if (req.session.cookieJar) {
-    getWatchedMovies(req, () =>{
+  if (req.session.serializedCookieJar) {
+    getWatchedMovies(req, () => {
       res.redirect('/loading');
     });
   }
@@ -62,21 +63,27 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  if (req.session.cookieJar) {
-    getWatchedMovies(req, () =>{
+  if (req.session.serializedCookieJar) {
+    getWatchedMovies(req, () => {
       res.redirect('/loading');
     });
   }
   else {
     netflixLogin(req.body.email, req.body.password).then(cookieJar => {
-      req.session.mail = req.body.email;
-      req.session.cookieJar = cookieJar.toJSON();
-
-      getWatchedMovies(req, () =>{
-        res.redirect('/loading');
-      });
+      if (cookieJar) {
+        req.session.mail = req.body.email;
+        req.session.serializedCookieJar = cookieJar.toJSON();
+        getWatchedMovies(req, () => {
+          res.redirect('/loading');
+        });
+      }
+      else {
+        throw 'Something went wrong trying to login to Netflix.';
+      }
     })
     .catch(error => {
+      console.log(error)
+
       res.render('login', {
         user: process.env.NETFLIX_DEVELOPMENT_USER,
         pass: process.env.NETFLIX_DEVELOPMENT_PASS,
@@ -86,6 +93,5 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/catalog', (req, res) => res.render('catalog'));
-
 
 app.listen(process.env.PORT);

@@ -9,10 +9,11 @@ module.exports = (username, password) => {
   return netflixLogin.login(username, password, options)
     .then(authData => netflixCrypto.fetchCryptoKeys(authData, options))
     .then(data => {
-      return data.authData.cookieJar;
+      if (data && data.authData && data.authData.cookieJar) {
+        return data.authData.cookieJar._jar;
+      }
     })
     .catch((error) => {
-      console.error('ERROR');
       console.error(error);
     });
 };

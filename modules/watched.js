@@ -1,9 +1,7 @@
-let toughCookie = require('tough-cookie');
 const request = require('request-promise');
 const viewedUrl = 'https://www.netflix.com/api/shakti/v4bf615c3/viewingactivity';
 
-
-module.exports = async (cookieJarJSON) => {
+module.exports = async (cookieJar) => {
 
   return new Promise((resolve) => {
     let watchedMovies = [];
@@ -13,7 +11,7 @@ module.exports = async (cookieJarJSON) => {
     let getPage = (pageNumber) => {
       return request(viewedUrl, {
         qs: { pg: pageNumber },
-        jar: toughCookie.fromJSON(cookieJarJSON),
+        jar: cookieJar,
       }).then(result => {
         let data = JSON.parse(result);
         totalItems = data.vhSize;

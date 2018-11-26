@@ -7,6 +7,7 @@ const mongoDbSessionUrl = process.env.MONGODB_URL;
 const expressSession = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(expressSession);
 const watchedMovies = require('./modules/watched');
+const shakti = require('./modules/Shakti');
 const restoreCookieJar = require('./modules/RestoreCookieJar');
 
 /**
@@ -40,19 +41,9 @@ app.use(expressSession({
  */
 app.get('/', (req, res) => res.render('welcome'));
 
-let getWatchedMovies = (req, callback) => {
-  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
-  watchedMovies(cookieJar).then( (watchedMovies) => {
-    console.log(watchedMovies);
-    callback();
-  });
-};
-
 app.get('/login', (req, res) => {
   if (req.session.serializedCookieJar) {
-    getWatchedMovies(req, () => {
-      res.redirect('/loading');
-    });
+    res.redirect('/loading');
   }
   else {
     res.render('login', {
@@ -64,26 +55,20 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   if (req.session.serializedCookieJar) {
-    getWatchedMovies(req, () => {
-      res.redirect('/loading');
-    });
+    res.redirect('/loading');
   }
   else {
     netflixLogin(req.body.email, req.body.password).then(cookieJar => {
       if (cookieJar) {
         req.session.mail = req.body.email;
         req.session.serializedCookieJar = cookieJar.toJSON();
-        getWatchedMovies(req, () => {
-          res.redirect('/loading');
-        });
+        res.redirect('/loading');
       }
       else {
         throw 'Something went wrong trying to login to Netflix.';
       }
     })
-    .catch(error => {
-      console.log(error)
-
+    .catch(() => {
       res.render('login', {
         user: process.env.NETFLIX_DEVELOPMENT_USER,
         pass: process.env.NETFLIX_DEVELOPMENT_PASS,
@@ -92,6 +77,25 @@ app.post('/login', (req, res) => {
   }
 });
 
-app.get('/catalog', (req, res) => res.render('catalog'));
+app.get('/loading', (req, res) => {
+  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
+  watchedMovies(cookieJar).then((watchedMovies) => {
+    req.session.watchedMovies = watchedMovies;
+    res.redirect('catalog');
+  });
+});
+
+app.get('/catalog', (req, res) => res.render('catalog', {
+  jsonData: JSON.stringify(req.session.watchedMovies)
+}));
+
+app.get('/browse', (req, res) => {
+  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
+
+  shakti(req, cookieJar).then((response) => {
+    res.status(200).send(response);
+  });
+
+});
 
 app.listen(process.env.PORT);

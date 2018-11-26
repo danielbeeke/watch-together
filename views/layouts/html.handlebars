@@ -6,6 +6,10 @@
     <title>Netflix Together</title>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link href="css/styles.css" rel="stylesheet" />
+    {{#if jsonData}}
+    <script id="json-data" type="application/json">{{ jsonData }}</script>
+    <script src="javascript/Isotope.js"></script>
+    {{/if}}
     <script type="module" src="javascript/App.js"></script>
 </head>
 

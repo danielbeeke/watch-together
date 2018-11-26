@@ -25,7 +25,8 @@ module.exports = async (cookieJar) => {
         watchedMovies = [...watchedMovies, ...newItems];
         currentPage++;
       }
-      return watchedMovies;
+
+      return watchedMovies.map((movie) => movie.movieID);
     };
 
     resolve(getAllItems());

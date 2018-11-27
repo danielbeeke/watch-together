@@ -1,7 +1,24 @@
-<h1>Catalog</h1>
+<div class="catalog-wrapper">
 
-{{#each videos}}
-<div class="video" data-video-id="{{ id }}">
-    <img src="{{ url }}">
+    <header class="categories-wrapper">
+        <span
+                class="category"
+                v-for="(category, categoryId) in categories"
+                @click="switchCategory(categoryId)"
+                v-html="category">
+        </span>
+    </header>
+
+    <div v-infinite-scroll="fetchData"
+         infinite-scroll-disabled="busy"
+         infinite-scroll-distance="10"
+         infinite-scroll-immediate-check="false">
+        <isotope :list="videos" :options='getOption()'>
+            <netflix-video
+                    :video="video"
+                    v-for="video in videos"
+                    :key="video.id">
+            </netflix-video>
+        </isotope>
+    </div>
 </div>
-{{/each}}

@@ -27,7 +27,7 @@ let doApiRequest = async (paths, req, buildIdentifier) => {
       paths: paths
     },
     jar: cookieJar,
-  });
+  })
 };
 
 let getPageJSON = async (url, req) => {
@@ -70,5 +70,36 @@ module.exports = {
     });
 
     return videos;
+  },
+
+  searchByEntity: async (genreId, page, perPage, req) => {
+    let pager = {
+      from: page * perPage,
+      to: (page + 1) * perPage
+    };
+
+    let defaultQuery = ['search', 'byEntity', genreId + '_genre', perPage];
+
+    try {
+      let apiResponse = await doApiRequest([
+        [...defaultQuery, pager, 'reference', 'boxarts', '_342x192', 'jpg'],
+        [...defaultQuery, pager, 'reference', ['title']]
+      ], req, 'v4bf615c3');
+
+      let videos = [];
+      Object.keys(apiResponse.value.videos).forEach((videoId) => {
+        let video = apiResponse.value.videos[videoId];
+        videos.push({
+          title: video.title,
+          id: videoId,
+          url: video.boxarts._342x192.jpg.url
+        });
+      });
+
+      return videos;
+    }
+    catch (error) {
+      return error;
+    }
   }
 };

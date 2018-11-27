@@ -1,0 +1,53 @@
+$padding: 10px;
+
+.netflix-video {
+  width: 100%;
+  opacity: 1;
+  transition: opacity .3s ease-in-out;
+
+  &:after {
+    content: '';
+    display: block;
+    padding-bottom: calc(100% / 16 * 9 + #{$padding});
+  }
+
+  img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    width: calc(100% - #{$padding * 2});
+    transition: width .3s ease-in-out;
+  }
+
+  @media (min-width: 420px) {
+    width: 50%;
+  }
+
+  @media (min-width: 820px) {
+    width: 33.33%;
+  }
+
+  @media (min-width: 1080px) {
+    width: 25%;
+  }
+
+  & img:hover {
+    width: 100%;
+  }
+}
+
+.catalog-wrapper {
+  padding: $padding;
+
+  &:hover {
+    .netflix-video {
+      opacity: .6 !important;
+
+      &:hover {
+        opacity: 1 !important;
+      }
+    }
+  }
+}

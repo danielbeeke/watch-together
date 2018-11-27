@@ -83,19 +83,16 @@ app.get('/loading', (req, res) => {
   });
 });
 
-app.get('/catalog/:genreId', (req, res) => {
-  shakti.browseGenre(req.params.genreId, req).then((videos) => {
+app.get('/catalog', (req, res) => {
     res.render('catalog', {
       jsonData: JSON.stringify(req.session.watchedMovies),
-      videos: videos
+      catalog: true
     });
-  }).catch((error) => {
-    console.log(error)
-  });
 });
 
-app.get('/api/browse/:genreId', (req, res) => {
-  shakti.browseGenre(req.params.genreId, req).then((response) => {
+app.get('/api/browse/:genreId/:page?', (req, res) => {
+  let page = req.params.page ? parseInt(req.params.page) : 0;
+  shakti.searchByEntity(req.params.genreId, page, 20, req).then((response) => {
     res.status(200).send(response);
   }).catch((error) => {
     console.log(error)

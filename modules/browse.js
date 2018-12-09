@@ -9,7 +9,19 @@ module.exports = (req, res) => {
   });
 
   netflixSession.login(null, () => {
-    netflixSession.browse(req.params.genreId, req.params.page, req.params.perPage, (error, videos) => {
+    netflixSession.browse(req.params.genreId, req.params.page, req.params.perPage, (error, response) => {
+
+
+      let videos = [];
+      Object.keys(response.value.videos).forEach((videoId) => {
+        let video = response.value.videos[videoId];
+        videos.push({
+          title: video.title,
+          id: videoId,
+          url: video.boxarts._342x192.jpg.url
+        });
+      });
+
       res.status(200).send(videos);
     });
   });

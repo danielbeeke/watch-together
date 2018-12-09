@@ -5,11 +5,9 @@ export let Catalog = {
          infinite-scroll-distance="10"
          infinite-scroll-immediate-check="false">
       <isotope :list="videos" :options='getOption()'>
-        <netflix-video
-                :video="video"
-                v-for="video in videos"
-                :key="video.id">
-        </netflix-video>
+        <div class="netflix-video" v-for="video in videos" :key="video.id">
+          <img :src="video.url">
+        </div>
       </isotope>
     </div>
   </div>`,

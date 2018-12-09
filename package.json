@@ -16,6 +16,7 @@
     "md5": "^2.2.1",
     "mongodb": "^3.1.10",
     "mustache": "^3.0.1",
+    "netflix2": "file:node-netflix2",
     "node-forge": "^0.7.6",
     "purdy": "^3.4.1",
     "request": "^2.88.0",

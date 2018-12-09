@@ -1,6 +1,12 @@
 html, body {
   padding: 0;
   margin: 0;
-  background-color: black;
+  background-color: $color_gray_darkest;
   font-family: 'Noto Sans TC', sans-serif;
+  color: $color_white;
+  height: 100%;
+}
+
+#app {
+  height: 100%;
 }

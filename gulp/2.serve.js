@@ -24,13 +24,14 @@ gulp.task('nodemon', function (cb) {
     script: 'index.js'
   }).on('start', function () {
     if (!started) {
-      cb();
+      setTimeout(() => {
+        cb();
+      }, 400);
       started = true;
     }
   });
 });
-
-
+/*
 gulp.task('websockets', function (cb) {
   let started = false;
   return nodemon({
@@ -42,5 +43,5 @@ gulp.task('websockets', function (cb) {
     }
   });
 });
-
-gulp.task('serve', gulp.series('nodemon', 'css', 'browsersync', 'websockets'));
+*/
+gulp.task('serve', gulp.series('nodemon', 'css', 'browsersync'));

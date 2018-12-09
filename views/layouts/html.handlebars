@@ -6,15 +6,14 @@
     <title>Netflix Together</title>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link href="css/styles.css" rel="stylesheet" />
-    {{#if catalog}}
-    <script id="json-data" type="application/json">{{ jsonData }}</script>
-    <script src="javascript/Isotope.js"></script>
-    <script src="javascript/Vue.js"></script>
-    <script src="javascript/netflix-video.js"></script>
-    <script src="javascript/Lodash.js"></script>
-    <script src="javascript/VueIsotope.js"></script>
-    <script src="javascript/VueInfiniteScroll.js"></script>
-    {{/if}}
+
+    <script src="javascript/vendor/Isotope.js"></script>
+    <script src="javascript/vendor/Vue.js"></script>
+    <script src="javascript/vendor/Lodash.js"></script>
+    <script src="javascript/vendor/VueIsotope.js"></script>
+    <script src="javascript/vendor/VueRouter.js"></script>
+    <script src="javascript/vendor/VueInfiniteScroll.js"></script>
+
     <script type="module" src="javascript/App.js"></script>
 </head>
 

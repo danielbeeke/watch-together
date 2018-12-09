@@ -1,0 +1,39 @@
+.profile-chooser {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .profiles {
+    display: flex;
+  }
+  
+  .profile {
+    cursor: pointer;
+    margin: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+
+    .avatar {
+      border: 3px solid transparent;
+      width: 160px;
+      display: block;
+    }
+
+    .name {
+      margin-top: 10px;
+      color: $color_gray_lighter;
+    }
+
+    &:hover {
+      .avatar {
+        border-color: $color_white;
+      }
+
+      .name {
+        color: $color_white;
+      }
+    }
+  }
+}

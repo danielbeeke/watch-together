@@ -4,6 +4,7 @@ new Vue({
     currentPage: 0,
     currentCategory: 6548,
     videos: [],
+    room: 'Room name',
     categories: {
       1365: 'Action',
       3063: 'Anime',
@@ -30,6 +31,10 @@ new Vue({
     setTimeout(() => {
       this.fetchData();
     }, 600);
+
+    // let websocket = new WebSocket('ws://localhost:8003/' + this.room);
+    // let watchedMovies = document.getElementById('json-data').innerHTML;
+    // websocket.send(watchedMovies);
   },
   methods: {
     switchCategory: function (categoryId) {

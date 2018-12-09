@@ -3,9 +3,35 @@
   padding: 10px;
   display: inline-block;
   cursor: pointer;
+
+  &.active {
+    color: red;
+  }
 }
 
 .categories-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  position: fixed;
+  z-index: 2;
+  background-color: black;
+  overflow: hidden;
+
+  > .title {
+    color: white;
+    padding: 10px;
+    display: inline-block;
+  }
+
+  .categories-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    position: absolute;
+  }
+
+
+  &:hover {
+    .categories-inner {
+      position: relative;
+    }
+  }
 }
+

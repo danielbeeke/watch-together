@@ -30,4 +30,17 @@ gulp.task('nodemon', function (cb) {
   });
 });
 
-gulp.task('serve', gulp.series('nodemon', 'css', 'browsersync'));
+
+gulp.task('websockets', function (cb) {
+  let started = false;
+  return nodemon({
+    script: 'websockets.js'
+  }).on('start', function () {
+    if (!started) {
+      cb();
+      started = true;
+    }
+  });
+});
+
+gulp.task('serve', gulp.series('nodemon', 'css', 'browsersync', 'websockets'));

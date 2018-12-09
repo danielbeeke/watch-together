@@ -30,47 +30,7 @@ let doApiRequest = async (paths, req, buildIdentifier) => {
   })
 };
 
-let getPageJSON = async (url, req) => {
-  let cookieJar = restoreCookieJar(req.session.serializedCookieJar);
-
-  if (!req.session.authUrl) {
-    req.session.authUrl = await authGetter();
-  }
-
-  return request({
-    uri: url,
-    method: 'GET',
-    jar: cookieJar,
-  }).then((response) => {
-    let responseSplit = response.split('netflix.reactContext =');
-    let responseSplit2 = responseSplit[1].split(';</script>');
-    let json = responseSplit2[0];
-
-    // I admit I do not know what I am doing, but this works.
-    // I realise that this breaks the encoding, but it gives me what I want.
-    json = json.split("\x20").join(' ');
-    json = json.split('\\x').join('');
-    return JSON.parse(json);
-  });
-};
-
 module.exports = {
-  browseGenre: async (genreId, req) => {
-    let pageJson = await getPageJSON('https://www.netflix.com/browse/genre/' + genreId, req);
-    let buildIdentifier = pageJson.models.serverDefs.data.BUILD_IDENTIFIER;
-    let paths = pageJson.models.postGateData.data;
-    let apiResponse = await doApiRequest([paths[6]], req, buildIdentifier);
-
-    let videos = [];
-    Object.keys(apiResponse.value.videos).forEach((videoId) => {
-      videos.push({
-        url: apiResponse.value.videos[videoId].boxarts._342x192.jpg.url,
-        id: videoId
-      });
-    });
-
-    return videos;
-  },
 
   searchByEntity: async (genreId, page, perPage, req) => {
     let pager = {
@@ -78,12 +38,12 @@ module.exports = {
       to: (page + 1) * perPage
     };
 
-    let defaultQuery = ['search', 'byEntity', genreId + '_genre', perPage];
+    let defaultQuery = ['genres', genreId, 'su'];
 
     try {
       let apiResponse = await doApiRequest([
-        [...defaultQuery, pager, 'reference', 'boxarts', '_342x192', 'jpg'],
-        [...defaultQuery, pager, 'reference', ['title']]
+        [...defaultQuery, pager, 'title', 'genres'],
+        [...defaultQuery, pager, 'boxarts', '_342x192', 'jpg'],
       ], req, 'v4bf615c3');
 
       let videos = [];

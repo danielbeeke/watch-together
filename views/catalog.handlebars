@@ -1,12 +1,17 @@
 <div class="catalog-wrapper">
 
     <header class="categories-wrapper">
-        <span
-                class="category"
-                v-for="(category, categoryId) in categories"
-                @click="switchCategory(categoryId)"
-                v-html="category">
-        </span>
+        <span class="title">Categories</span>
+
+        <div class="categories-inner">
+            <span
+                    class="category"
+                    :class="{'active': categoryId == currentCategory}"
+                    v-for="(category, categoryId) in categories"
+                    @click="switchCategory(categoryId)"
+                    v-html="category">
+            </span>
+        </div>
     </header>
 
     <div v-infinite-scroll="fetchData"

@@ -1,5 +1,18 @@
 export let Catalog = {
   template: `<div class="catalog-wrapper">
+    <header class="categories-wrapper">
+      <span class="title">Categories</span>
+      <div class="categories-inner">
+        <span
+          class="category"
+          v-for="(category, categoryId) in categories"
+          :class="{'active': currentCategory == categoryId}"
+          @click="switchCategory(categoryId)"
+          v-html="category">
+        </span>      
+      </div>
+    </header>
+
     <div v-infinite-scroll="fetchData"
          infinite-scroll-disabled="busy"
          infinite-scroll-distance="10"

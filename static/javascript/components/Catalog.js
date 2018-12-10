@@ -17,8 +17,8 @@ export let Catalog = {
          infinite-scroll-disabled="busy"
          infinite-scroll-distance="10"
          infinite-scroll-immediate-check="false">
-      <isotope :list="videos" :options='getOption()'>
-        <div class="netflix-video" v-for="video in videos" :key="video.id">
+      <isotope :list="videos" :options="isotopeOptions()">
+        <div class="netflix-video" v-for="video in filteredVideos" :key="video.id">
           <img :src="video.url">
         </div>
       </isotope>
@@ -30,6 +30,7 @@ export let Catalog = {
       currentPage: 0,
       currentCategory: 6548,
       videos: [],
+      blacklist: [],
       room: 'Room name',
       categories: {
         1365: 'Action',
@@ -54,15 +55,28 @@ export let Catalog = {
       }
     }
   },
-  created () {
+  created: async function () {
     setTimeout(() => {
       this.fetchData();
     }, 600);
 
-    // let websocket = new WebSocket('ws://localhost:8003/' + this.room);
-    // let watchedMovies = document.getElementById('json-data').innerHTML;
-    // websocket.send(watchedMovies);
+    let websocket = new WebSocket('ws://localhost:8003/' + this.room);
+    let rawResponse = await fetch('/api/get-watched');
+    const watchedVideoIds = await rawResponse.json();
+
+    websocket.addEventListener('message', (event) => {
+      this.blacklist = event.data.split(',').map(value => parseInt(value));
+    });
+
+    websocket.send(watchedVideoIds);
   },
+
+  computed: {
+    filteredVideos: function () {
+      return this.videos.filter(video => !this.blacklist.includes(video.id))
+    }
+  },
+
   methods: {
     switchCategory: function (categoryId) {
       this.currentCategory = categoryId;
@@ -71,27 +85,26 @@ export let Catalog = {
       this.fetchData();
     },
 
-    fetchData: function () {
+    fetchData: async function () {
       if (this.currentPage === -1) { return }
 
-      fetch(`/api/browse/${this.currentCategory}/${this.currentPage}/20`)
-        .then(response => response.json())
-        .then(videos => {
-          if (videos instanceof Array) {
-            videos.forEach(video => {
-              if (!this.videos.find(findVideo => findVideo.id === video.id)) {
-                this.videos.push(video)
-              }
-            });
-            this.currentPage++;
-          }
-          else {
-            this.currentPage = -1;
+      let rawResponse = await fetch(`/api/browse/${this.currentCategory}/${this.currentPage}/20`);
+      const videos = await rawResponse.json();
+
+      if (videos instanceof Array) {
+        videos.forEach(video => {
+          if (!this.videos.find(findVideo => findVideo.id === video.id)) {
+            this.videos.push(video)
           }
         });
+        this.currentPage++;
+      }
+      else {
+        this.currentPage = -1;
+      }
     },
 
-    getOption: function () {
+    isotopeOptions: function () {
       return {
         masonry: {
           gutter: 0,

@@ -4,6 +4,7 @@ let gulp = require('gulp');
 let browserSync = require('browser-sync');
 let nodemon = require('gulp-nodemon');
 let reload = global.browserSync.reload;
+let gulpMultiProcess = require('gulp-multi-process');
 
 gulp.task('browsersync', function(cb) {
   global.browserSync.init({
@@ -24,14 +25,12 @@ gulp.task('nodemon', function (cb) {
     script: 'index.js'
   }).on('start', function () {
     if (!started) {
-      setTimeout(() => {
-        cb();
-      }, 400);
+      cb();
       started = true;
     }
   });
 });
-/*
+
 gulp.task('websockets', function (cb) {
   let started = false;
   return nodemon({
@@ -43,5 +42,9 @@ gulp.task('websockets', function (cb) {
     }
   });
 });
-*/
-gulp.task('serve', gulp.series('nodemon', 'css', 'browsersync'));
+
+gulp.task('servers', () => {
+  return gulpMultiProcess(['websockets', 'nodemon']);
+});
+
+gulp.task('serve', gulp.series('browsersync', 'servers', 'css'));

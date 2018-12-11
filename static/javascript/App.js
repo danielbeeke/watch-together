@@ -1,9 +1,13 @@
+// Route components
 import { Login } from './components/Login.js';
 import { Catalog } from './components/Catalog.js';
 import { Home } from './components/Home.js';
 import { ChooseProfile } from './components/ChooseProfile.js';
+
+// Components
 import './components/NetflixVideo.js';
 import './components/CategorySwitcher.js';
+import './components/NetflixAvatar.js';
 
 const routes = [
   { name: 'home', path: '/', component: Home },

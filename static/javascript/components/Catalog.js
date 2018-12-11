@@ -1,21 +1,29 @@
 export let Catalog = {
   template: `<div class="catalog-wrapper">
-    <category-switcher></category-switcher>
-    <div class="connected-profiles">
-        <netflix-avatar v-for="person in roomData" :key="person.profile.guid" :profile="person.profile"></netflix-avatar>
-    </div>
+
+    <header class="catalog-header">
+      <category-switcher />
+      
+      <div class="connected-profiles">
+          <netflix-avatar v-for="person in roomData" v-if="person" :key="person.profile.guid" :profile="person.profile" />
+      </div>    
+      
+      <input type="text" v-model="roomName">
+    </header>
+    
     <div v-infinite-scroll="fetchData"
          infinite-scroll-disabled="busy"
          infinite-scroll-distance="10"
          infinite-scroll-immediate-check="false">
+         
       <isotope :list="videos" :options="isotopeOptions()">
         <netflix-video 
           class="netflix-video" 
           :video="video" 
           v-for="video in filteredVideos" 
-          :key="video.id">
-        </netflix-video>
+          :key="video.id" />
       </isotope>
+      
     </div>
   </div>`,
 
@@ -26,7 +34,7 @@ export let Catalog = {
       currentPage: 0,
       videos: [],
       blacklist: [],
-      room: 'Room name',
+      roomName: 'Room name',
     }
   },
   created: function () {
@@ -90,10 +98,9 @@ export let Catalog = {
 
     /**
      * Websockets initialisation.
-     * @type {WebSocket}
      */
     connectWebsocket: async function () {
-      let websocket = new WebSocket('ws://localhost:8003/' + this.room);
+      let websocket = new WebSocket('ws://localhost:8003/' + this.roomName);
 
       websocket.addEventListener('message', (event) => {
         this.roomData = JSON.parse(event.data);

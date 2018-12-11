@@ -1,5 +1,5 @@
 Vue.component('category-switcher', {
-  template: `<header class="categories-wrapper">
+  template: `<div class="categories-wrapper">
   <span class="title">Categories</span>
     <div class="categories-inner">
       <span
@@ -10,7 +10,7 @@ Vue.component('category-switcher', {
         v-html="category">
       </span>      
     </div>
-  </header>`,
+  </div>`,
 
   methods: {
     switchCategory: function (categoryId) {

@@ -9,7 +9,7 @@ let server = require('http').createServer(),
   port = 8003;
 
 app.use(function (req, res) {
-  res.send({ msg: "hello" });
+  res.send({ msg: '-' });
 });
 
 let rooms = {};
@@ -23,30 +23,36 @@ wss.on('connection', (ws, req) => {
 
   let currentPeer = {
     ws: ws,
-    videos: []
+    watched: [],
+    profile: false
   };
 
   rooms[roomName].push(currentPeer);
 
   let broadcast = () => {
-    let totalVideos = new Set();
-
-    rooms[roomName].forEach(peerData => {
-      peerData.videos.forEach(videoId => {
-        totalVideos.add(videoId);
-      });
+    let roomData = rooms[roomName].map(peer => {
+      return {
+        watched: peer.watched,
+        profile: peer.profile
+      }
     });
 
     rooms[roomName].forEach(peerData => {
-      peerData.ws.send(Array.from(totalVideos.values()).join(','));
+      peerData.ws.send(JSON.stringify(roomData));
     });
   };
 
-  ws.on('message', (videosString) => {
-    currentPeer.videos = videosString.split(',').map(videoId => parseInt(videoId));
+  ws.on('message', (message) => {
+    message = JSON.parse(message);
+    currentPeer.watched = message.watched;
+    currentPeer.profile = message.profile;
     broadcast();
   });
 
+  ws.on('close', () => {
+    let index = rooms[roomName].indexOf(currentPeer);
+    delete rooms[roomName][index];
+  });
 });
 
 server.on('request', app);
